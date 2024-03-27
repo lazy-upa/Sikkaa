@@ -1,0 +1,5 @@
+Transaction 1:
+Current Balance: Rs. 100
+Income: Rs. 100
+Expense: Rs. 0
+
