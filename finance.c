@@ -8,24 +8,31 @@
 #define MAX_TRANSACTIONS 100
 
 // Structure to represent a transaction
-typedef struct Transaction {
-    int current_balance;
-    int income;
-    int expense;
-} Transaction;
+// typedef struct Transaction {
+//     int current_balance;
+//     int income;
+//     int expense;
+// } Transaction;
+
+typedef struct History 
+{
+    int amount;
+    char transaction_type;//expense or income
+    char transaction_detail[20]; //detail of the transaction (e.g. category like food, entertainment etc.)
+} History;
+
 
 void login();
 void username();
-void add_transaction(int *income, int *expense, int *current_balance, int *food, int *entertainment, int *education, int *others, Transaction history[], int *transaction_count);
-void display_history(Transaction history[], int transaction_count);
-void save_history(Transaction history[], int transaction_count);
+void add_transaction(int *income, int *expense, int *current_balance, int *food, int *entertainment, int *education, int *others, History history[], int *history_count);
+void display_history(History history[], int history_count);
+void save_history(History history[], int history_count);
 
 int main() {
-    int choice;
     int income = 0, expense = 0, current_balance = 0;
     int food = 0, entertainment = 0, education = 0, others =0;
-    Transaction history[MAX_TRANSACTIONS];
-    int transaction_count = 0;
+    History history[MAX_TRANSACTIONS];
+    int history_count=0;
 
     login();
 
@@ -33,11 +40,11 @@ int main() {
         system("cls");
         printf("\n\n\nYOUR BALANCE: Rs. %d\n\n\n", current_balance);
         printf("Income: %d \t | Expense: %d\n\n", income, expense);
-        add_transaction(&income, &expense, &current_balance, &food, &entertainment, &education, &others, history, &transaction_count);
+        add_transaction(&income, &expense, &current_balance, &food, &entertainment, &education, &others, history, &history_count);
         printf("\n\n\nYOUR BALANCE: Rs. %d\n\n\n", current_balance);
         printf("Income: %d \t | Expense: %d\n\n", income, expense);
-        display_history(history, transaction_count);
-        save_history(history, transaction_count);
+        display_history(history, history_count);
+        save_history(history, history_count);
 
         printf("\nDo you want to continue? (Press 'y' to continue or any other key to exit)\n");
         char cont;
@@ -99,86 +106,105 @@ void username() {
 }
 
 /*-----------------------------------------Add Transaction------------------------------------------*/
-void add_transaction(int *income, int *expense, int *current_balance, int *food, int *entertainment, int *education, int *others, Transaction history[], int *transaction_count) {
+void add_transaction(int *income, int *expense, int *current_balance, int *food, int *entertainment, int *education, int *others, History history[], int *history_count) {
     char ch;
-    int spend = 0, earn = 0;
+    int amount=0;
 
     printf("\n\nDo you want to add expense or income? (Enter 'e' for expense & 'i' for income)\n");
     scanf(" %c", &ch);
 
     if (ch == 'e' || ch == 'E') {
         printf("Enter expense: ");
-        scanf("%d", &spend);
-        *expense += spend;
-        *current_balance -= spend;
+        scanf("%d", &amount);
+        *expense += amount;
+        *current_balance -= amount;
 
-        int category;
+        char category[100];
         printf("Enter category:\n");
         printf("1. Food\n");
         printf("2. Entertainment\n");
         printf("3. Education\n");
         printf("4. Others\n");
-        scanf("%d", &category);
+        int category_choice;
+        scanf("%d", &category_choice);
 
-        switch (category) {
+        switch (category_choice) {
             case 1:
-                *food += spend;
+                *food += amount;
+                strcpy(category, "Food");
                 break;
             case 2:
-                *entertainment += spend;
+                *entertainment += amount;
+                strcpy(category, "Entertainment");
                 break;
             case 3:
-                *education += spend;
+                *education += amount;
+                strcpy(category, "Education");
                 break;
             case 4:
-                *others += spend;
+                *others += amount;
+                strcpy(category, "Others");
+                break;
             default:
                 printf("Invalid category\n");
                 break;
         }
+
+        history[*history_count].amount = amount;
+        history[*history_count].transaction_type = 'e';
+        strcpy(history[*history_count].transaction_detail, category);
+        (*history_count)++;
     }
+
     else if (ch == 'i' || ch == 'I') {
         printf("Enter income: ");
-        scanf("%d", &earn);
-        *income += earn;
-        *current_balance += earn;
+        scanf("%d", &amount);
+        *income += amount;
+        *current_balance += amount;
+
+        history[*history_count].amount = amount;
+        history[*history_count].transaction_type = 'i';
+        strcpy(history[*history_count].transaction_detail, "Job");
+        (*history_count)++;
     }
     else {
         printf("Invalid input. Please enter 'e' for expense or 'i' for income.");
     }
 
-    // Add transaction to history
-    Transaction new_transaction = { *current_balance, *income, *expense };
-    history[*transaction_count] = new_transaction;
-    (*transaction_count)++;
 }
 
 /*----------------------------------Function to display transaction history------------------------------------------*/
-void display_history(Transaction history[], int transaction_count) {
+void display_history(History history[], int history_count) {
     printf("\n\n----- Transaction History -----\n");
-    for (int i = 0; i < transaction_count; i++) {
-        printf("Transaction %d:\n", i+1);
-        printf("Current Balance: Rs. %d\n", history[i].current_balance);
-        printf("Income: Rs. %d\n", history[i].income);
-        printf("Expense: Rs. %d\n\n", history[i].expense);
+    for (int i = history_count - 1; i >= 0; i--) {
+        printf("%d: ", history_count - i);
+        if (history[i].transaction_type == 'e') {
+            printf("Spent Rs. %d on %s\n", history[i].amount, history[i].transaction_detail);
+        } else if (history[i].transaction_type == 'i') {
+            printf("Earned Rs. %d income\n", history[i].amount);
+        }
     }
 }
 
+
 /*------------------------ Function to save transaction history to a file------------------------------------*/
-void save_history(Transaction history[], int transaction_count) {
-    FILE *file = fopen("transaction_history.txt", "w");
-    if (file == NULL) {
+void save_history(History history[], int history_count) {
+    FILE *fp = fopen("transaction_history.txt", "w");
+    if (fp == NULL) {
         printf("Error opening file.\n");
         return;
     }
 
-    for (int i = 0; i < transaction_count; i++) {
-        fprintf(file, "Transaction %d:\n", i+1);
-        fprintf(file, "Current Balance: Rs. %d\n", history[i].current_balance);
-        fprintf(file, "Income: Rs. %d\n", history[i].income);
-        fprintf(file, "Expense: Rs. %d\n\n", history[i].expense);
+    for (int i = 0; i < history_count; i++) {
+        fprintf(fp, "Transaction %d:\n", i+1);
+        fprintf(fp, "%d", i);
+        if (history[i].transaction_type == 'e') {
+            fprintf(fp, "Spent Rs. %d on %s\n", history[i].amount, history[i].transaction_detail);
+        } else if (history[i].transaction_type == 'i') {
+            fprintf(fp, "Earned Rs. %d income\n", history[i].amount);
+        }
     }
 
-    fclose(file);
+    fclose(fp);
 }
 

@@ -1,5 +1,4 @@
 Transaction 1:
-Current Balance: Rs. 100
-Income: Rs. 100
-Expense: Rs. 0
-
+0Earned Rs. 100 income
+Transaction 2:
+1Spent Rs. 12 on Entertainment
