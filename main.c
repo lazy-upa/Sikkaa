@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-
 #define MAX_INPUT_CHARS 20
 
 /*--------------------------------------types and structures definition-----------------------------------*/
@@ -33,10 +32,16 @@ int main(void)
     bool passwordMouseOnText = false;
     
     //Balance variables
-    int current_balance=0;
-    int income=100, expense =0;
+    int income=0, expense =0;
+    int current_balance= income - expense;
     Rectangle amountBox = {320, 600, 250, 50};
+    bool amountMouseOnText = false;
+    int amount=0;
     
+    Rectangle addIncomeButton = {580, 600, 150, 50};
+    Rectangle addExpenseButton = {750, 600, 150, 50};
+    
+    Rectangle goToAnalysisButton = {750, 400, 150, 50};
     // Function to check if a point is inside the rectangle
        /* bool CheckCollisionPointRec(Vector2 point, Rectangle rec) {
         return (point.x >= rec.x && point.x <= (rec.x + rec.width) &&
@@ -75,6 +80,10 @@ int main(void)
             passwordMouseOnText = true;
         else passwordMouseOnText = false;
         
+        if (CheckCollisionPointRec(GetMousePosition(), amountBox))
+            amountMouseOnText = true;
+        else amountMouseOnText = false;
+            
         /*---------------------------------------Username textbox input----------------------------------------*/
         if (usernameMouseOnText)
         {
@@ -130,6 +139,50 @@ int main(void)
             }
         }
         
+        if (CheckCollisionPointRec(GetMousePosition(), amountBox))
+            amountMouseOnText = true;
+        else
+            amountMouseOnText = false;
+
+/*---------------------------------------Amount textbox input----------------------------------------*/
+if (amountMouseOnText)
+{
+    // Get char pressed (unicode character) on the queue
+    int key = GetCharPressed();
+
+    // Check if more characters have been pressed on the same frame
+    while (key > 0)
+    {
+        // Check if the entered character is a digit
+        if ((key >= '0') && (key <= '9'))
+        {
+            // Convert the character to its numerical value and update the amount
+            amount = amount * 10 + (key - '0');
+        }
+
+        key = GetCharPressed();  // Check next character in the queue
+    }
+
+    if (IsKeyPressed(KEY_BACKSPACE))
+    {
+        // Handle backspace to delete digits from the amount
+        amount /= 10;
+        // Optionally, you can add additional checks to prevent negative values
+    }
+}
+
+       if (CheckCollisionPointRec(GetMousePosition(), addIncomeButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            income += amount;
+            current_balance = income - expense;
+            amount = 0;
+       }
+        if (CheckCollisionPointRec(GetMousePosition(), addExpenseButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            expense += amount;
+            current_balance = income - expense;
+            amount = 0;
+        }
+
+        
          //Vector2 mousePosition = GetMousePosition();
         
         // Check if mouse is over the button
@@ -142,7 +195,7 @@ int main(void)
         {
             case LOGIN:
             {
-                if (strcmp(username, "yurisha") == 0 && strcmp(password, "pw") == 0)
+                if (strcmp(username, "a") == 0 && strcmp(password, "a") == 0)
                 {
                     currentScreen = HOME;
                 }
@@ -156,10 +209,9 @@ int main(void)
                 // TODO: Update TITLE screen variables here!
 
                 // Press enter to change to GAMEPLAY screen
-                if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
-                {
+                if (CheckCollisionPointRec(GetMousePosition(), goToAnalysisButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                     currentScreen = ANALYSIS;
-                }
+                 }
             } break;
             case ANALYSIS:
             {
@@ -170,6 +222,8 @@ int main(void)
                 {
                     currentScreen = HISTORY;
                 }
+                
+
             } break;
             case HISTORY:
             {
@@ -246,36 +300,55 @@ int main(void)
                     DrawText("Personal Information:", 120, 100, 30, BLACK);
                     DrawText("Username: Yurisha Bajracharya\n\n\nOccupation: Student\n\n\nDOB: 2061-07-20\n\n\nEmail:yurisha@gmail.com\n\n\nPhone:9834000000", 120, 150, 20, DARKGRAY);
                     DrawText("CURRENT STATUS:", 120, 400, 40, BLACK);
-                    char balanceText[20]; // Assuming the balance can be represented in 20 characters
+                    char balanceText[100]; 
                     snprintf(balanceText, sizeof(balanceText), "Current Balance: %d", current_balance);
                     DrawText(balanceText, 220, 490, 20, DARKGREEN);
-                    char incomeText[20];
+                    char incomeText[100];
                     snprintf(incomeText, sizeof(incomeText), "Income: %d", income);
                     DrawText(incomeText, 220, 510, 20, DARKGREEN);
-                    char expenseText[20];
+                    char expenseText[100];
                     snprintf(expenseText, sizeof(expenseText), "Expense: %d", expense);
                     DrawText(expenseText, 220, 530, 20, DARKGREEN);
-                    DrawText("Do you want to enter income or expense?(- for expense)", 220, 560, 30, DARKGREEN);
+                    
+                    // analysis
+                    DrawRectangleRec(goToAnalysisButton, ORANGE);
+                    DrawText("Analysis", goToAnalysisButton.x + 10, goToAnalysisButton.y + 10, 20, WHITE);
+                    
+                    // Input income and expense
+                    DrawText("Do you want to enter income or expense?(- for expense)", 220, 560, 30, BLACK);
                     DrawRectangleRec(amountBox, LIGHTGRAY);  
+                    
+                    DrawRectangleRec(addIncomeButton, BLUE);
+                    DrawText("Add Income", addIncomeButton.x + 10, addIncomeButton.y + 10, 20, WHITE);
+                    DrawRectangleRec(addExpenseButton, RED);
+                    DrawText("Add Expense", addExpenseButton.x + 10, addExpenseButton.y + 10, 20, WHITE);
+                    
+                     // Convert amount integer to string           
+                    char amountText[20]; // Assuming the amount can be represented in 20 characters
+                    snprintf(amountText, sizeof(amountText), "%d", amount);
+                    if (amountMouseOnText) DrawRectangleLines((int)amountBox.x, (int)amountBox.y, (int)amountBox.width, (int)amountBox.height, GREEN);
+                    else DrawRectangleLines((int)amountBox.x, (int)amountBox.y, (int)amountBox.width, (int)amountBox.height, DARKGRAY);
+                    DrawText(amountText, (int)amountBox.x + 5, (int)amountBox.y + 8, 40, BLACK);
                     // Draw the button
                    /* DrawRectangleRec(button1.bounds, button1.color);
                     DrawText(button1.text, button1.bounds.x + 20, button1.bounds.y + 30, 20, WHITE);*/
                     
                     } break;
+                    
                 case ANALYSIS:
                 {
                     // TODO: Draw GAMEPLAY screen here!
-                    DrawRectangle(0, 0, screenWidth, screenHeight, GRAY);
+                    DrawRectangle(0, 0, screenWidth, screenHeight, LIGHTGRAY);
                     DrawText("ANALYSIS", 20, 20, 40, MAROON);
                     DrawText("Analyze your expenses and income.", 130, 220, 20, MAROON);
-                    float chartValues[3] = {30.0f, 45.0f, 25.0f}; // Values for each segment of the pie chart
-    Color colors[3] = {RED, BLUE, GREEN}; // Colors for each segment
-        Vector2 center = {screenWidth / 2, screenHeight / 2};
-        float radius = screenHeight / 4;
-        float startAngle = 0;
+                    float chartValues[3] = {income, expense, 0.0f}; // Values for each segment of the pie chart
+                    Color colors[3] = {GREEN, RED, GREEN}; // Colors for each segment
+                    Vector2 center = {screenWidth / 2, screenHeight / 2};
+                    float radius = screenHeight / 4;
+                    float startAngle = 0;
 
         for(int i = 0; i < 3; i++){
-            float sweepAngle = 360 * (chartValues[i] / 100);
+            float sweepAngle = 360 * (chartValues[i] / (income + expense));
             DrawCircleSector(center, radius, startAngle, startAngle + sweepAngle, radius, colors[i]);
             startAngle += sweepAngle;
         }
