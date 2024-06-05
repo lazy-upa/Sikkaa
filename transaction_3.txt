@@ -1,0 +1,5 @@
+current balance:0
+Total income:0
+Original income before savings:0
+savings income:0
+expense:0

@@ -1,4 +1,0 @@
-Transaction 1:
-0Earned Rs. 100 income
-Transaction 2:
-1Spent Rs. 12 on Entertainment

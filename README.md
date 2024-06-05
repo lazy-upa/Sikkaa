@@ -1,2 +1,0 @@
-# Sikkaa
-Personal Finance System
